@@ -53,3 +53,94 @@ The Goldthorpe-Hope big-class scale is defined based on the market position (inc
 
 Meso-classes subdivide the occupations further by reemphasizing hierarchical dimensions of status, culminating in more complex systems that similarly struggle with clear theoretical linkages (Featherman, Lancaster Jones, and Hauser 1975). Finally micro-classes advocate for classes at almost the occupation-level (Weeden and Grusky 2005). In the following, I try to bridge the benefits of having a big-class scheme with respecting the institutional nature of single occupations by using ACT’s clear cultural measurement paradigm to construct the classes based on the individual occupation deference relations.  
 
+```{r}
+library(tidyverse)
+library(knitr)
+library(janitor)
+library(snakecase)
+library(haven)
+library(stargazer)
+library(kableExtra)
+library(NetCluster)
+
+##########################################################################################
+#                             DATA                                                      #
+##########################################################################################
+
+#step 1: read in the deference matrix
+def_mat <- read.csv("Data/bayesact_deflections.csv", header = TRUE)
+
+#fix the format of the data so the rownames are not column 1
+rownames(def_mat) <- def_mat[,1]
+def_mat[,1] <- NULL
+
+#coerce into matrix format 
+def_mat <- as.matrix(def_mat)
+
+#get both outgoing and ingoing ties
+t_def <- t(def_mat) #get the transpose of the matrix
+whole <- rbind(def_mat, t_def) #concatenate the original deference matrix with its transpose
+
+
+#step 2: getting the ACT occupational dictionary
+#load in data downloaded from UGA website - should be most recent US one
+dictionary <- read.csv("Data/FullSurveyorUSMeans_final.csv") 
+
+
+#step 3: get the identity list
+occ_id <- rownames(def_mat)
+occ_list <- read.csv("Data/BayesACT-MeanDeflection.csv")
+#clean identity list
+occ_list <- occ_list %>%
+            separate(term, c("t", "identity"), "_", extra = "merge")
+  
+#limit dictionary to only occupational identities
+subdictionary <- dictionary %>%
+                 filter(term %in% occ_list$identity & Type == "Identities") %>% 
+                 mutate(term = as.character(term))
+```
+
+
+```{r}
+##########################################################################################
+#                       BLOCKMODEL                                                      #
+##########################################################################################
+
+#get correlations between occupational identities 
+cors <- cor(whole)
+
+#make into dissimilarities b/w occupations
+dis <- 1 - cors
+
+#coerce into distance data class
+dist <- as.dist(dis)
+
+#clustering on distance measures
+hierclust <- hclust(dist, method = "ward.D2")
+plot(hierclust)
+
+#see where the correlation levels off
+clustered_observed_cors <- vector()
+clustered_observed_cors <-clustConfigurations(10, hierclust, cors)
+plot(clustered_observed_cors$correlations)
+
+#save that data for nicer ggplot 
+cor_clust <- tibble(correlations = clustered_observed_cors$correlations,
+                    cluster = seq(1, 10, by = 1))
+
+#make plot
+c <- ggplot(data = cor_clust, mapping = aes(x = cluster, y = correlations)) + 
+       geom_line() +
+       scale_x_continuous(breaks = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)) +
+       geom_point(mapping = (aes(x = 4, y = cor_clust$correlations[cor_clust$cluster == 4])),
+                            color = "blue", size = 3) +
+       labs(title = "Figure 1: Correlation between By-Cluster Matrices\n and Observed Correlation Matrix",
+            x = "Number of Clusters",
+            y = "Correlation",
+            caption = "Note: the correlation between the 1 cluster 
+            matrix and the observed matrix is undefined")
+
+
+ggsave("correlation_plot_bayesact_new.png", plot = c)
+```
+
