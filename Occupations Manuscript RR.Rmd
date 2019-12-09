@@ -1,0 +1,55 @@
+---
+title: "The Social Psychology of Occupational Status Groups: Relationality in the Structure of Deference"
+author: "Emily Maloney"
+header-includes:
+    - \usepackage{setspace}\doublespacing
+date: "December 9, 2019"
+output: pdf_document
+indent: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Abstract  
+
+Affect control theory predictions of average deference toward occupational identities can capture occupational status better than previous operationalizations of prestige (Freeland and Hoey 2018). Combining this new social psychological measurement of occupational status with social network methods, this paper explores the underlying relational patterns hidden within Freeland and Hoey’s (2018) scores of average deference. I construct a complete network of deference relations across 300 occupational identities using Bayesian affect control theory simulations. A blockmodel analysis resulted in four positions within the occupational deference structure:everyday specialists, service-to-society occupations, the inconveniently powerful, and the extremely good and active. These are occupational classes that defer to the same occupational identities, and that receive deference from the same occupations. Exploring the reduced blockmodel provides a more complete depiction of occupational status as measured by affect control theory.  
+
+**Keywords:** Affect control theory, occupational status, networks, blockmodeling 
+
+\newpage
+
+### Introduction   
+
+Theoretically-driven measurement of occupational class should drive the assessment of stratification questions, but debates on how to do so have little consensus. Freeland and Hoey (2018) advocated using theoretical constructs from sociological social psychology to capture acultural definition of status rather than using measures based on material resources. In that analysis, the authors conceive of prestige as linked to how culturally likely or unlikely occupations were to defer to other occupational identities. They created a ”deference score” based on affect control theory (ACT), which performs better than the General Social Survey (GSS) measure of occupational prestige when predicting workplace outcomes.  
+
+However, in Freeland and Hoey (2018) the deference scores were averaged across interactions with all other occupational identities, concealing the variation in how likely or unlikely it was for occupations to defer to other occupations. By foregrounding the relationality within occupational status, this paper advocates for a re-construction of a “big-class” occupational scheme based on this new deference measurement (Goldthorpe and Hope 1962).  
+
+Using a blockmodeling technique on a network of deference relations across 300 occupational identities, I find four blocks of occupations, representing different structural positions within the overall occupational structure. I label these blocks as (1) everyday specialists, (2) service-to-society occupations, (3) the inconveniently powerful, and (4) the good actors. Exploration of these blocks and a reduced blockmodel structure reveals the benefit of uniting a social-psychological understanding of the cultural meaning of occupations with network methods that exploit relationality. In conclusion, I compare these classes with previous class schemes, such as Goldthorpe and Hope’s (1962) original big-classes, Featherman, Jones, and Hauser’s (1975) meso-class paradigm, and argue for the benefit of using occupational classes rather than Weeden and Grusky’s (2005) micro-classes.   
+
+####Occupational Prestige  
+
+Measuring occupational prestige is a difficult endeavor, as it needs to be able to capture the cultural dimension of social esteem net of material resources and credentials – concepts that are often highly correlated (Freeland and Hoey 2018; Ganzeboom and Treiman 1996). Most recent scholars tend to adhere to Weber’s conception of status honor when considering measurement of status, and thus base their measurements on “cultural beliefs about the relative superiority, equality, and inferiority of members of social groups" (Freeland and Hoey 2018:245). Perhaps the most used measure of occupational status in recent scholarship is the occupational prestige question in the GSS. However, there are concerns about the validity of the GSS measure, as its method of asking respondents to score occupations based on their social standing may fail to accurately measure prestige or status (Freeland and Hoey 2018).   
+
+Because sociological social psychology has long been involved in questions of status, it is useful to draw upon when developing operationalizations of cultural understandings of prestige (Ridgeway 2014). Freeland and Hoey (2018) return to the social psychological roots of status beliefs by using a formal model of social interactions, ACT (Heise 1979, 1987; Schröder, Hoey, and Rogers 2016; Robinson and Smith-Lovin 2018). The theory involves measurements of constructs that are approximately analogous to prestige and power, allowing for the explicit inclusion of these dimensions in measurements of occupational status (Rogalin, Soboroff, and Lovaglia 2007).  
+
+Using simulations generated from ACT, Freeland and Hoey (2018) constructed a network of deference relations across occupational identities. To create a single deference score for each occupation, they averaged the scores across rows of the full matrix, losing information about which occupations are likely to defer to which others. Because occupational status is such a relational construct, the additional relational data contained in the network is a ripe source for deeper analysis into the classes of occupations that have similar patterns of deference. Since  the elements in the occupational deference network are produced through theoretically based ACT simulations, a summary of the theory is presented below. A full description is found in Heise (2007) and Robinson and Smith-Lovin (2018).  
+
+####ACT  
+ACT is a mathematical model of social interaction that uses measurements of cultural meaning to locate identities and behaviors within a three dimensional affective space (Heise 1979). The three dimensions upon which social concepts are measured are evaluation (good/bad), potency (powerful/weak), and activity (fast/slow) (EPA hereafter). The control aspect of the model indicates that people try to maintaincultural meanings, termed fundamental sentiments.  
+
+ACT specifies equations that predict the shift in meaning (called the deflection) that occurs when an Actor does a Behavior to an Object (ABO). The new positions for impressions within affective space after the ABO event are transient impressions. The deflection of cultural meaning created by an interpersonal action (ABO) is the sum of squared differences between the EPA values for the fundamental sentiments and transient impressions of each  component of the situation (Robinson and Smith-Lovin 2018). Deflection is an indicator of how culturally (dis)confirming a situation is – a higher deflection score means that an event is more culturally unexpected, because it means that there has been more movement within affective space as a result of the event. Recent scholarship has developed ACT within a Bayesian framework. Rather than point estimates of the position of the identity or behavior along the three axes of cultural meaning, the Bayesian analysis uses a distribution to account for uncertainty in cultural meaning (Schröder et al. 2016).  
+
+####Using ACT to Measure Occupational Status  
+
+Freeland and Hoey (2018) used BayesACT’s way of measuring cultural conformity in their operationalization of occupational status. They calculated a mean deflection score for simulations of the event occupation a defers to occupation b across all of their occupational identities. Because deflection is a measure of cultural confirmation, they argued that occupations for which it is more culturally unlikely to defer to other occupations (higher deflection scores) had higher occupational status. They calculated each occupation’s deference score by averaging across all deference events and ranked occupations by these averages, with higher scores (lower deflection from deference by others) indicating greater occupational status. Here, I replicate their analysis but instead of averaging across rows, I examine the entire network of deference relations.   
+
+####Occupational Classes  
+
+Creating classes of occupations is not a new development in the field of occupational stratification or social mobility. Positions range from Goldthorpe and Hope’s (1962) big-class scheme of occupations to Weeden and Grusky’s (2005) argumentusing micro-classes is more accurate. Scholars argue about the dimensions of importance when constructing classes, how many parameters to have when defining classes, and the acceptable heterogeneity within classes as well as the purpose of classes.  
+
+The Goldthorpe-Hope big-class scale is defined based on the market position (income and chance of mobility) as well as work position (level of authority) of occupations, and consists of seven classes: higher-grade professionals or managers, lower-grade professionals or managers, routine non-manual employees, small proprietors, farmers, lower-grade technicians, skilled manual workers, and non-skilled workers. The arguments against this big-class scheme include the within-class heterogeneity among non-measured dimensions and the theoretical reasoning behind measured dimensions (Goldthorpe 1993; Hertel 2016; Weeden and Grusky 2005).   
+
+Meso-classes subdivide the occupations further by reemphasizing hierarchical dimensions of status, culminating in more complex systems that similarly struggle with clear theoretical linkages (Featherman, Lancaster Jones, and Hauser 1975). Finally micro-classes advocate for classes at almost the occupation-level (Weeden and Grusky 2005). In the following, I try to bridge the benefits of having a big-class scheme with respecting the institutional nature of single occupations by using ACT’s clear cultural measurement paradigm to construct the classes based on the individual occupation deference relations.  
+
