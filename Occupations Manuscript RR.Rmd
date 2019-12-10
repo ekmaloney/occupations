@@ -1,11 +1,13 @@
 ---
-title: "The Social Psychology of Occupational Status Groups: Relationality in the Structure of Deference"
+title: 'The Social Psychology of Occupational Status Groups: Relationality in the
+  Structure of Deference'
 author: "Emily Maloney"
-header-includes:
-    - \usepackage{setspace}\doublespacing
 date: "December 9, 2019"
-output: pdf_document
-indent: true
+output:
+  pdf_document: default
+  word_document: default
+indent: yes
+header-includes: \usepackage{setspace}\doublespacing
 ---
 
 ```{r setup, include=FALSE}
@@ -53,7 +55,13 @@ The Goldthorpe-Hope big-class scale is defined based on the market position (inc
 
 Meso-classes subdivide the occupations further by reemphasizing hierarchical dimensions of status, culminating in more complex systems that similarly struggle with clear theoretical linkages (Featherman, Lancaster Jones, and Hauser 1975). Finally micro-classes advocate for classes at almost the occupation-level (Weeden and Grusky 2005). In the following, I try to bridge the benefits of having a big-class scheme with respecting the institutional nature of single occupations by using ACT’s clear cultural measurement paradigm to construct the classes based on the individual occupation deference relations.  
 
-```{r}
+###Data  
+
+The data used to construct the network of occupational deference relations is the sentiment dictionary collected from students at one private and one public university in 2015 (Robinson et al. 2016). ACT dictionaries are constructed by asking participants to rate identities and behaviors on EPA on a scale from -4.3  to 4.3. For BayesACT, the distribution of responses is used as the estimate of the identity or behavior along the three axes (Heise 2010; Schröder et al. 2016). The occupations included in this analysis match those considered in Freeland and Hoey (2018), with the exception of the identity of dishwasher. It appears that respondents envisoned the machine dishwasher rather than the occupation dishwasher when rating the E, P, and A values, so it was not included in this analysis. In total, there are 303 identities total in the data, and a full list is included in an online appendix. Descriptive statistics are displayed in Table 1.   
+
+The mean evaluation is 1.21, potency is 1.10, and activity is 0.42, indicating that the majority of occupations are thought of as relatively good, relatively powerful, and somewhat active. An important note is that the behavior to defer to has an EPA rating of -0.15, 0.45, -0.44, indicating a slightly lower then neutral evaluation and activity and a slightly more than neutral potency. 
+
+```{r, echo = FALSE, warning=FALSE, message=FALSE, results='asis'}
 library(tidyverse)
 library(knitr)
 library(janitor)
@@ -62,6 +70,8 @@ library(haven)
 library(stargazer)
 library(kableExtra)
 library(NetCluster)
+library(factoextra)
+library(cluster)
 
 ##########################################################################################
 #                             DATA                                                      #
@@ -73,6 +83,10 @@ def_mat <- read.csv("Data/bayesact_deflections.csv", header = TRUE)
 #fix the format of the data so the rownames are not column 1
 rownames(def_mat) <- def_mat[,1]
 def_mat[,1] <- NULL
+
+#take dishwasher out 
+def_mat <- def_mat %>% select(-i_dishwasher)
+def_mat <- def_mat[-37,]
 
 #coerce into matrix format 
 def_mat <- as.matrix(def_mat)
@@ -96,12 +110,23 @@ occ_list <- occ_list %>%
   
 #limit dictionary to only occupational identities
 subdictionary <- dictionary %>%
-                 filter(term %in% occ_list$identity & Type == "Identities") %>% 
+                 filter(term %in% occ_list$identity & Type == "Identities" |
+                          term == "self.employed_worker" |
+                          term == "part.time_employee" |
+                          term == "speech.language_pathologist") %>% 
+                 filter(term != "dishwasher") %>% 
                  mutate(term = as.character(term))
+
+descriptives <- subdictionary %>% select(E, P, A)
+
+stargazer(descriptives, title = "Descriptive Statistics of Occupational Identities",
+          header = FALSE)
 ```
 
+###Method  
 
-```{r}
+
+```{r, eval=FALSE, echo = FALSE}
 ##########################################################################################
 #                       BLOCKMODEL                                                      #
 ##########################################################################################
@@ -142,5 +167,163 @@ c <- ggplot(data = cor_clust, mapping = aes(x = cluster, y = correlations)) +
 
 
 ggsave("correlation_plot_bayesact_new.png", plot = c)
+
+
 ```
 
+Replicating an approach developed by Robinson (1996), the network of deference relations was constructed by simulating the event “occupation *i* defers to occupation *j*” across all possible combinations of the 304 occupations, using the BayesACT generalization of the original ACT equations. The deflections produced by these interactions are the tie weights between occupation i and occupation j, making this a valued and directed network (the deflection produced by “occupation i defers to occupation j” is not the same as the reverse) . Deflections range from 2.28 (pawnbroker defers to textile worker) to 13.02 (surgeon defers to surgeon). These deflections cover the range from events that are seen as normal (near zero) to events that seem unusual (over 7.0) (Curdy 2018).  
+
+In order to uncover positions within the occupational structure in terms of their deference relations to other occupations, a blockmodel analysis was conducted on the deference network using the sna package in R (McFarland, Messing, Nowak, and Westwood 2010; Butts 2016). Blockmodels group nodes according to their structural equivalence, which is a measure of similarity in relationships to others in the network. Rather than grouping actors who are all connected to each other, as community detection methods do, blockmodeling classifies actors by assessing who has similar relations to the same people (Wasserman and Faust 1994).   
+
+The first step in a blockmodel analysis is to get a measure of similarity in relationship patterns for each combination of nodes. To do this, the transpose of the original deference matrix was concatenated onto the initial matrix of deference relations in order to capture both outgoing and ingoing ties in the similarity measure. Next, that 608 by 304 matrix was correlated by column, resulting in a correlation matrix in which the value in cell *i,j* indicated how similar the pattern of deference scores for occupation *i* was to occupation *j*.  
+
+However, most algorithms used in blockmodeling methods use indicators of dissimilarity, rather than similarity, when assigning nodes to blocks. As such, all cells in the correlation matrix are subtracted from 1, so larger cell values indicate more dissimilarity, or less structural equivalence. Lastly, the dissimilarity matrix is coerced into a distance measure, changing the meaning of the value from how dissimilar the occupational identities are from each other to how far apart they are, for use by a clustering algorithm. 
+Finally, using Ward’s algorithm, the hierarchical clustering method began with each occupation as its own cluster, and then iteratively joined the occupations into larger and larger clusters until all were in one group. Ward’s algorithm constructs groups with the objective of minimizing the variance within blocks. In practice, this means that at each step of the method, the two clusters that are joined are those that will produce the least amount of within-cluster variance. It does this until all nodes are contained within one overall cluster.  
+
+The result of this algorithm is cluster solutions ranging from 1 cluster containing all 303 occupational identities to 303 clusters, each containing a single occupational identity. Choosing the appropriate number of blocks is an issue of both theory and method. Keeping in mind the prior literature on big-class occupational groups, I compared the cluster solutions from 2 to 10 clusters to the initial correlation matrix that resulted from correlating the deference matrix with its concatenated transpose by column. The comparison process involved using the cluster solutions at each step and creating a by-cluster correlation matrix, in which cells indicated either the average within group correlation if both occupation *i* and *j* were in the same block, or between block correlation if occupation *i* and *j* were in different blocks. Finally, the Pearson product-moment correlation between the overall correlation matrix and the by-cluster correlation matrix was computed, measuring the similarity between the baseline measure of structural equivalence and the clustered version, for each solution.  
+
+The ideal solution would have a high correlation between the cluster solution matrix and the observed correlation matrix while also penalizing the addition of more clusters (McFarland et al. 2010; Nowak et al. 2012). I chose four blocks, as that is the point before which the increase in correlation decreases below a 45 degree line, as seen in Figure 1.   
+
+\begin{figure}[H]
+\includegraphics{correlation_plot_bayesact_new.png}
+\caption{Correlation Plot for BayesACT Matrix}
+\end{figure}
+
+###Results  
+
+Figure 2 displays the distribution of Evaluation, Potency, and Activity across the 4 blocks. Evaluation defines each block most conclusively, having the highest peak in every block, which reflects the central place of social esteem in this new measurement of occupational status. Certain blocks are also distinguished by their activity. Blocks 4 and 1 most notably exhibit this feature, with higher and lower average activity distributions, respectively. Typically activity is less explanatory within ACT, but because the action defers to has a low activity score, occupations with high activity ratings are especially unlikely to defer to others. Freeland and Hoey (2018) highlight this impact of activity in their conclusions, because it contributed tothe prestige of service-to-society jobs.  
+
+```{r, echo = FALSE, eval = FALSE}
+
+#set the number of blocks
+num_blocks <- 4
+blocks_4 <- cutree(hierclust, k = num_blocks)
+
+#get the blockmodel 
+b_4 <- blockmodel(def_mat, blocks_4)
+b_4 
+
+#make a heatmap
+block_data <- b_4$blocked.data
+
+#save the blockmodel
+saveRDS(b_4, "blockmodel_4")
+
+#merge the block assignment with the dictionary info
+blocks_4 <- as.data.frame(blocks_4)
+block_4 <- tibble::rownames_to_column(blocks_4, "identity") %>% 
+           separate(identity, c("t", "term"), "_", extra = "merge")
+block_info <- left_join(subdictionary, block_4, by = "term")
+
+#save the csv
+write.csv(block_info, "block_info_bayesact.csv")
+
+#making the block distribution plot
+#first want to get the information into long format to make the fill = command in ggplot 
+#work correctly 
+p <- gather(block_info, key = "EPA", value = "point_est", E:A)
+p <- p %>% mutate(EPA = as.factor(EPA))
+
+block_dist <- ggplot(data = p, mapping = aes(x = point_est, group = EPA, color = EPA)) +
+              geom_density() +
+              facet_wrap(~blocks_4) +
+              xlab("")
+
+ggsave("dist.png", block_dist)
+
+```
+
+\begin{figure}[H]
+\includegraphics{dist.png}
+\caption{Distribution of EPA Values Across Blocks}
+\end{figure}
+
+```{r, echo = FALSE}
+block_info <- read.csv("block_info_bayesact.csv")
+
+id4 <- block_info %>% group_by(blocks_4) %>% 
+                    mutate(ediff = (E - mean(E))^2,
+                           pdiff = (P - mean(P))^2,
+                           adiff = (A - mean(A))^2,
+                           ssd = (ediff + pdiff + adiff),
+                           meanE = mean(E),
+                           meanP = mean(P),
+                           meanA = mean(A),
+                           count = n()) %>% 
+                    arrange(blocks_4, ssd) %>% slice(1:5) %>% 
+                    select(blocks_4, term, meanE, meanP, meanA, count)
+
+id4 <- as.matrix(id4)
+colnames(id4) <- c("Block Number", "Identity", "Mean E", "Mean P", "Mean A", "Count")
+kable(id4, caption = "Block Descriptions", format = "pandoc")
+
+```
+
+The four blocks consist of distinct EPA configurations indicating the type of occupational identity that best fits each position. Table 2 shows the mean EPA values for each block along with the identity that is closest to that mean. Reviewing the occupations within each block, I propose a general label for each set of occupations to summarize the types of jobs in each block. A full list of occupations and their blocks are in the supplemental appendix. 
+
+**Block 1 – Everyday Specialists**  
+
+Occupational identities in block 1 are characterized by their moderately high evaluation, moderately high potency, and neutral activity. As the largest block, consisting of 120 occupations, these identities range from bricklayer  (1.21, 0.69, 0.11), which fits the profile the best, to baker (1.97, 0.70, 0.06).. On the whole, these occupational identities represent a position in the greater occupational structure in which they are respected and have power over their particular range of speciality, but does not extend over the general public.  They are respected for their local skills, but not revered more generally.  
+
+**Block 2 – Service-to-Society**  
+
+The occupational identities in block two are marked by their increase in evaluation and activity over the occupations in block one. The occupations closest to the profile of the block are creative professions, such as decorator (1.70, 0.81, 0.84), musician (1.77, 1.25, 1.47), and storyteller (2.15, 1.62, 0.30). However, this block also contains identities associated with high activity and low power, like hostess (1.94, 0.39, 0.92) and beautician (1.32, 0.05, 1.11), as well as those with high evaluation and high power, such as astronaut (2.33, 2.13, 0.76) and interpreter (2.26, 1.97, 0.80). What unites all 55 of these identities is a position that requires visibility and high cultural esteem. These identities represent a strata of occupations that are well-thought of and do things either directly for us, in the case of teacher, or social worker, or for society as a whole.  
+
+**Block 3 – Inconveniently Powerful** 
+
+The most prominent characteristic of block 3 occupational identities are lower evaluation and higher power than blocks 1 and 2. Ultimately, this results in including identities that are punitively powerful, like foreman (0.64, 1.30, 0.34), bailiff (0.72, 1.56, 0.10), and auditor general (0.14, 1.55, 0.10). Additionally, this block consists of occupations which are powerful but perhaps seen as more annoying than simply punitive, like crane operator (0.94, 1.23, 0.29), editor (1.08, 1.70, 0.23), economist (0.87, 0.93, -0.26), and dietician (1.56, 0.90, -0.32).  
+
+**Block 4 – Extremes**  
+
+Finally, block 4 is most marked by their very high average evaluation, potency, and activity. In general, this position represents a good and highly active set of occupations, like nurse (2.84, 1.75, 0.53), firefighter (3.27, 2.85, 2.29), and cheerleader (1.05, 0.24, 2.94).  These are esteemed occupational identities, but not necessarily the ones that garner the highest material resources.  
+
+Taking a step back from these individual block discussions, one can see the larger patterns at play in the social-psychological meaning of occupational status groups. The majority of occupations are split along esteem and power lines. In particular, everyday jobs are delineated by the respective esteem they have. High esteem goes to everyday specialists, and low esteem to the inconveniently powerful.  We value some trades even while we look askance at some of our powerful but not totally loveable professionals.  Occupations with very high cultural esteem are split by how active they are, with moderately active occupations falling into the service-to-society block, and very high active occupations making up the more revered block.   
+
+The four blocks discussed here have distinct differences from the major schemes of occupational classes put forward by stratification theorists. Most significantly, potency seems to take a reduced role in these blocks, having less explanatory power over which occupations fall into which blocks than esteem and activity do. In particular, this analysis captures the societal differences in powerful jobs that are more and less socially esteemed, especially in the separation of the everyday specialists from the inconveniently powerful.  
+
+####Reduced Blockmodel  
+
+Using the sna package in R, I produced a reduced blockmodel using the mean value in each block (Butts 2016). The reduced blockmodel in Table 3 averages the deflection produced from deference simulations across the occupations within each block-to-block section of the entire deference matrix. The averages have been rounded to the nearest whole number to ease interpretation.  
+
+To construct the blockmodel, the original deference matrix is re-ordered by block membership, to group all of the occupational identities in each block together. Then, the deflection scores from all of the simulations falling within each block-to-block subsection (e.g. all deflections produced from simulations of "block 1 occupation defers to block 1 occupation"), are averaged as an indicator of the general unlikeliness of that block-to-block deference relationship from occurring. The benefit of the reduced blockmodel is that it helps to untangle the hierarchical relations between the occupational blocks as it shows general patterns of deference across blocks. 
+
+```{r, echo = FALSE}
+#Reduced Blockmodel#
+#read in data
+b_4 <- readRDS("blockmodel_4")
+
+#round 
+bmodel_4 <- (b_4$block.model) %>% round(digits = 0)
+
+#bmodel2 <- b$block.model %>% round(digits = 3)
+#kable(bmodel2)
+
+#get row and column averages
+bmodel_4 <- cbind(bmodel_4, rowMeans(bmodel_4))
+bmodel_4 <- rbind(bmodel_4, colMeans(bmodel_4))
+bmodel_4 <- bmodel_4 %>% round(digits = 2)
+bmodel_4[5, 5] <- ""
+
+#make sure all columns and rows are named
+colnames(bmodel_4)[5] <- "Row Average"
+rownames(bmodel_4)[5] <- "Column Average"
+kable(bmodel_4, format = "pandoc", caption = "Reduced Blockmodel")
+```
+
+When reading the reduced blockmodel, a higher value in cell*i,j* indicates that it is more culturally **unexpected** for occupations from block *i* to defer to occupations from block *j*. When a row has higher values, it indicates that the occupations within that block have higher occupational status and vice versa.  
+
+It is most uncommon for block 4 occupations to defer to any of the other occupations, since all of the values contained in the cells within row 4 are higher than the mean value across the entire reduced blockmodel (6.875). Since block 4 consists of esteemed occupations, which are often very active, this pattern of unlikeliness to defer conforms to our cultural expectations. Furthermore, as would be expected given that block 2 consists of occupations that are similar to block 4, just one step down in activity, they have the second highest unlikelihood of deferring to other occupations. Block 1 has a lower average likelihood of deference than blocks 2 or 4, indicating that it is more likely for these identities to defer to others, and especially for them to defer to occupations in block 3. As this represents everyday specialists deferring to the inconveniently powerful, this follows from our expectations of a power hierarchy. For example, a baker deferring to a bailiff results in a deflection of 3.15, which is relatively low.  
+
+Lastly, the average for row 3 is the lowest across all of the rows, indicating that it is more culturally expected for occupations from these blocks to defer to others than any of the other rows. This may appear surprising, given the high potency scores of these occupations. Example occupations from this block include defense attorney and senator. But this is actually an illustrative example of what the deference relation reveals that is different than the previous methods of measuring occupational prestige that used either measurements that relied on material resources or the level of education required for entry to the occupation. Because the evaluation for these occupations is fairly low, it is culturally expected for them to defer to others, precisely because people do not think very highly of what these occupations represent. They are not considered socially esteemed in the same way as the other occupations that may have less power but are generally respected to a higher extent, and this lack of cultural esteem lowers these occupations’ relative status regardless of their powerfulness. Further exploration of the reduced blockmodel is in the supplemental online appendix of the paper. 
+
+###Discussion  
+
+Using ACT’s paradigm to generate a big-class classification of occupational status groups overcomes many of the concerns with the original Goldthorpe-Hope schemes. For one, it is clearly tied to a theoretical paradigm. Second, it limits itself to modeling one type of relation: deference. Deference is definitionally related to prestige without involving complicated decisions about the types of ownership or authority that have plagued earlier conceptions of occupational class. Finally, there is clear evidence for cultural consensus on the EPA dimensions that are being used for classification.   
+
+Weeden and Grusky (2005) advocate for using micro-classes because occupations, not larger status groups, represent the institutionalization of work meaning.  They say micro-classes  perform better when addressing micro-level questions. However, using the cultural definitions of identities to build the classes helps assuage this concern, because the institutionally-defined meanings are explicitly accounted for within the analysis.  
+
+Additionally, deflection scores produced from ACT simulations have provided a measurement strategy for concepts of cultural conformity that had previously been difficult to operationalize (Freeland and Hoey 2018; Hunzaker 2016). This paper furthers this theoretical agenda. For one, the method of constructing networks of events across a selection of identities provides a social-psychologically generated meaning network that can be subjected to network techniques. In this case, blockmodeling was used to find status groups of occupations, but other research questions could call for community detection or centrality methods. Further, results from these network methods can be used in standard regression analyses to evaluate their explanatory power.   
+
+###Conclusion  
+
+Freeland and Hoey (2018) showed how using a measure of occupational status derived from an indicator of cultural conformity in ACT performed better than prior operationalizations of occupational prestige. This analysis used the entire network of deference relations to theorize occupational status groups based on the patterns of deference among 300 occupational identities. The blockmodel analysis resulted in four blocks: everyday specialists, service-to-society occupations, the inconveniently powerful, and the actively revered. These status groups represented varying combinations of evaluation and potency. They reflect Freeland and Hoey’s (2018) argument that to best follow Weber’s definition of status, measurements should include both cultural esteem and material power dimensions. The reduced blockmodel revealed the underlying relationality within the production of deflection as different combinations of occupational identities can produce the same amount of deflection due to different sources of cultural dissonance. On the whole, this analysis showed the benefits of uniting social psychology, networks, and relational sociology. 
