@@ -238,6 +238,8 @@ ggsave("dist.png", block_dist)
 \caption{Distribution of EPA Values Across Blocks}
 \end{figure}
 
+\newpage
+
 ```{r, echo = FALSE}
 block_info <- read.csv("block_info_bayesact.csv")
 
@@ -245,16 +247,25 @@ id4 <- block_info %>% group_by(blocks_4) %>%
                     mutate(ediff = (E - mean(E))^2,
                            pdiff = (P - mean(P))^2,
                            adiff = (A - mean(A))^2,
-                           ssd = (ediff + pdiff + adiff),
-                           meanE = mean(E),
-                           meanP = mean(P),
-                           meanA = mean(A),
-                           count = n()) %>% 
+                           ssd = (ediff + pdiff + adiff)) %>% 
                     arrange(blocks_4, ssd) %>% slice(1:5) %>% 
-                    select(blocks_4, term, meanE, meanP, meanA, count)
+                    select(blocks_4, term, E, P, A)
+
+sum_blocks <- block_info %>% group_by(blocks_4) %>% 
+              summarise(meanE = mean(E),
+                        meanP = mean(P),
+                        meanA = mean(A),
+                        count = n()) %>% 
+              select(meanE, meanP, meanA, count)
+              
+sum_blocks <- as.matrix(sum_blocks)
+colnames(sum_blocks) <- c("Mean E", "Mean P", "Mean A", "Count")
+rownames(sum_blocks) <- c("Block 1: Everyday Specialists", "Block 2: Service-to-Society",
+                          "Block 3: Inconveniently Powerful", "Block 4: Actively Revered")
+kable(sum_blocks, caption = "Block Descriptions", format = "pandoc")
 
 id4 <- as.matrix(id4)
-colnames(id4) <- c("Block Number", "Identity", "Mean E", "Mean P", "Mean A", "Count")
+colnames(id4) <- c("Block Number", "Identity", "E", "P", "A")
 kable(id4, caption = "Block Descriptions", format = "pandoc")
 
 ```

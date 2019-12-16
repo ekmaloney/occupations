@@ -1,0 +1,41 @@
+---
+title: "Supplemental Analysis"
+author: "Emily Maloney"
+date: "December 16, 2019"
+output: word_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**A. A.	All Identities and their block assignments**
+
+```{r}
+#libraries
+library(tidyverse)
+library(haven)
+library(foreign)
+library(igraph)
+library(blockmodeling)
+library(knitr)
+library(igraph)
+library(kableExtra)
+library(NetCluster)
+
+block_info <- read.csv("block_info_bayesact.csv")
+
+all_id <- block_info %>% 
+          group_by(blocks_4) %>% 
+                    mutate(ediff = (E - mean(E))^2,
+                           pdiff = (P - mean(P))^2,
+                           adiff = (A - mean(A))^2,
+                           ssd = (ediff + pdiff + adiff)) %>% 
+                    arrange(blocks_4, ssd) %>% 
+                    select(blocks_4, term, E, P, A, ssd)
+kable(all_id, caption = "All Identities, Arranged by Distance from Average within Each Block",
+      format = "pandoc")
+  
+```
+
